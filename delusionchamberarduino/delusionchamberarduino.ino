@@ -1,8 +1,8 @@
-#define PULL_PIN 13
+#define PULL_PIN 11
 #define PUSH_PIN 12
 #define PING_PIN 6
 #define MOTION_PIN 8
-int calibrationTime = 30;
+int calibrationTime = 10;
 bool moving = false;
 long current_time, movement_time;
 enum States {SUSPENDED, UP, DOWN, DROPPED};
@@ -13,6 +13,7 @@ void setup(){
     pinMode(PUSH_PIN, OUTPUT);
     pinMode(MOTION_PIN, INPUT);
     Serial.print("calibrating sensor ");
+    stop();
     for(int i = 0; i < calibrationTime; i++){
         Serial.print(".");
         delay(1000);
@@ -32,9 +33,8 @@ void loop(){
         break;
         case DOWN:
             Serial.println("GOING DOOOWN");
-            if(check_ping() > 5){
-                push();
-            }else{
+            pull();
+            if(check_ping() < 5){
                 current_state = DROPPED;
             }
         break;
@@ -44,7 +44,8 @@ void loop(){
             current_state = UP;
         break;
         case UP:
-            pull();
+            Serial.println("going up");
+            push();
             delay(5000);
             current_state = SUSPENDED;
         break;
