@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from randomaudio import RandomAudio
 from lightcontroller import LightController
 from pygame import mixer
+from time import sleep
 RED_PIN = 17
 GREEN_PIN = 27
 BLUE_PIN = 22
@@ -19,8 +20,10 @@ class DelusionChamber:
         self.light = LightController(GPIO, RED_PIN, GREEN_PIN, BLUE_PIN)
     def start(self):
         while True:
-            if GPIO.input(18):
+            if GPIO.input(18) == 1:
                 self.light.fade_red()
+                sleep(2)
+            sleep(1)		
             # self.random_music.play_sound()
             # self.random_ideas.play_sound()
 
