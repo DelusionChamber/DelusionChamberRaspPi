@@ -8,7 +8,6 @@ class LightController():
         self.red = GPIO.PWM(r, 100)
         self.green = GPIO.PWM(g, 100)
         self.blue = GPIO.PWM(b, 100)
-    def set_light(self, r, g, b):
     def fade_red(self):
         self.red.start(0)
         for i in range(0, 101):

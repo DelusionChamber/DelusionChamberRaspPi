@@ -19,7 +19,7 @@ class DelusionChamber:
         self.light = LightController(GPIO, RED_PIN, GREEN_PIN, BLUE_PIN)
     def start(self):
         while True:
-            if GPIO.input(18)
+            if GPIO.input(18):
                 self.light.fade_red()
             # self.random_music.play_sound()
             # self.random_ideas.play_sound()
