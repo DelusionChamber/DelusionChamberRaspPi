@@ -1,4 +1,5 @@
-from time import sleep
+from time import sleepQ
+from random  import randint
 import threading
 import pdb
 LIGHT_DELAY = .01
@@ -13,12 +14,20 @@ class LightThread(threading.Thread):
         self.projected_g = 1
         self.actual_b = 1
         self.projected_b = 1
+        self._stop = threading.Event()
+
+    def stop(self):
+        self._stop.set()
+    def stopped(self):
+        return self._stop.isSet()
 
     def run(self):
         while True:
             if self.actual_r < self.projected_r:
+                self.actual_r = self.actual_r/.9 if self.actual_r/.9 < self.projected_r else self.projected_r
                 self.lc.red.ChangeDutyCycle(self.actual_r*.5)
             if self.actual_r > self.projected_r:
+                self.actual_r = self.actual_r*.9 if self.actual_r*.9 > self.projected_r else self.projected_r
                 self.lc.red.ChangeDutyCycle(self.actual_r/.5)
 
             if self.actual_g < self.projected_g:
