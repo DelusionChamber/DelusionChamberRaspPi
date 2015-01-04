@@ -1,4 +1,5 @@
-from time import sleepQ
+from time import sleep
+
 from random  import randint
 import threading
 import pdb
@@ -14,36 +15,45 @@ class LightThread(threading.Thread):
         self.projected_g = 1
         self.actual_b = 1
         self.projected_b = 1
+        self.f_rate = .9
+        self.p_rate = .1
         self._stop = threading.Event()
 
     def stop(self):
+        self.lc.red.ChangeDutyCycle(0)
+        self.lc.blue.ChangeDutyCycle(0)
+        self.lc.green.ChangeDutyCycle(0)
+ 
         self._stop.set()
     def stopped(self):
         return self._stop.isSet()
 
     def run(self):
         while True:
+            self.set_actual_values()
+            self.lc.red.ChangeDutyCycle(self.actual_r)
+            self.lc.blue.ChangeDutyCycle(self.actual_b)
+            self.lc.green.ChangeDutyCycle(self.actual_g)
+            sleep(self.p_rate)
+
+    def set_actual_values(self):
             if self.actual_r < self.projected_r:
-                self.actual_r = self.actual_r/.9 if self.actual_r/.9 < self.projected_r else self.projected_r
-                self.lc.red.ChangeDutyCycle(self.actual_r*.5)
+                self.actual_r = self.actual_r+.1
+                self.actual_r = self.actual_r/self.f_rate if self.actual_r/self.f_rate < self.projected_r else self.projected_r
             if self.actual_r > self.projected_r:
-                self.actual_r = self.actual_r*.9 if self.actual_r*.9 > self.projected_r else self.projected_r
-                self.lc.red.ChangeDutyCycle(self.actual_r/.5)
+                self.actual_r = self.actual_r*self.f_rate if self.actual_r*self.f_rate > self.projected_r else self.projected_r
 
             if self.actual_g < self.projected_g:
-                self.actual_g = self.actual_g/.9 if self.actual_g/.9 < self.projected_g else self.projected_g
-                self.lc.green.ChangeDutyCycle(self.actual_g)
+                self.actual_g = self.actual_g+.1
+                self.actual_g = self.actual_g/self.f_rate if self.actual_g/self.f_rate < self.projected_g else self.projected_g
             if self.actual_g > self.projected_g:
-                self.actual_g = self.actual_g*.9 if self.actual_g*.9 > self.projected_g else self.projected_g
-                self.lc.green.ChangeDutyCycle(self.actual_g)
+                self.actual_g = self.actual_g*self.f_rate if self.actual_g*self.f_rate > self.projected_g else self.projected_g
 
             if self.actual_b < self.projected_b:
-                self.actual_b = self.actual_b/.9 if self.actual_b/.9 < self.projected_b else self.projected_b
-                self.lc.blue.ChangeDutyCycle(self.actual_b)
+                self.actual_b = self.actual_b+.1
+                self.actual_b = self.actual_b/self.f_rate if self.actual_b/self.f_rate < self.projected_b else self.projected_b
             if self.actual_b > self.projected_b:
-                self.actual_b = self.actual_b*.9 if self.actual_b*.9 > self.projected_b else self.projected_b
-                self.lc.blue.ChangeDutyCycle(self.actual_b)
-            sleep(.1)
+                self.actual_b = self.actual_b*self.f_rate if self.actual_b*self.f_rate > self.projected_b else self.projected_b
 
 
 
