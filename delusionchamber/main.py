@@ -1,11 +1,9 @@
 import RPi.GPIO as GPIO
-import pdb
+import pdb, time
 from randomaudio import RandomAudio
 from lightcontroller import LightController, LightThread
 from winchcontroller import WinchController
-from repeatedtimer import RepeatedTimer
 from pygame import mixer
-from time import sleep
 from random import randint
 
 RED_PIN = 17
@@ -29,61 +27,58 @@ class DelusionChamber:
         self.winch = WinchController(GPIO, WINCH_PULL_PIN, WINCH_PUSH_PIN)
         self.light_thread = LightThread(self.light)
         self.photo = 0
-        self.cur_time = time.time
         self.selected_num = 0
 
     def start(self):
-        # green_interval = RepeatedTimer(5, self.pulse_green)
-        # calms_interval = RepeatedTimer(5, self.fade_calms)
-        # warms_interval = RepeatedTimer(5, self.fade_warms)
         try:
+            motion_sensed = False
             next_time = time.time()
             self.light_thread.start()
-            while self.selected_num < 5:
-                if GPIO.input(MOTION_PIN) == 1:
+            self.fade_calms()
+            time.sleep(3)
+            while self.selected_num < 5 :
+                if GPIO.input(MOTION_PIN) == 1 or motion_sensed == True:
                     print "Motion Sensed"
-                    self.selected_num+=1
                     self.pulse_green()
+                    if motion_sensed == False:
+                        motion_sensed = True
+                        self.selected_num+=1
+                    else:
+                        motion_sensed = False
                     print self.selected_num
-                else:
-                    if time.time() > next_time + 3:
-                        print "time"
-                        next_time = time.time()
-                        self.fade_calms()
+                if time.time() > next_time + 3:
+                    next_time = time.time()
+                    self.fade_calms()
             self.selected_num = 0
             while self.photo < 500:
                 self.fade_warms()
                 self.winch.push()
                 self.random_music.play_sound()
             self.random_ideas.play_sound()
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, SystemExit):
             print "stopped"
             self.light_thread.stop()
 
     def pulse_red(self):
-        self.light_thread.actual_b = 0
+        self.light_thread.projected_g = 0
         self.light_thread.projected_b = 0
-        self.light_thread.actual_g = 0
         self.light_thread.projected_r = 100 if self.light_thread.projected_r == 0 else 1
 
     def pulse_green(self):
-        self.light_thread.actual_b = 1
-        self.light_thread.projected_b = 1
-        self.light_thread.actual_r = 1
-        self.light_thread.projected_r = 1
+        self.light_thread.projected_b = 0
+        self.light_thread.projected_r = 0
         self.light_thread.projected_g = 100 if self.light_thread.projected_g < 5 else 0
-        sleep(1)
+        time.sleep(1)
         self.light_thread.projected_g = 100 if self.light_thread.projected_g < 5 else 0
-        sleep(1)
+        time.sleep(1)
 
     def fade_calms(self):
-        self.light_thread.actual_r = 1
-        self.light_thread.projected_r = 1
+        self.light_thread.actual_r = 0
         self.light_thread.projected_b = randint(1,100)
         self.light_thread.projected_g = randint(1,100)
 
     def fade_warms(self):
-        self.light_thread.actual_b = 1
-        self.light_thread.projected_b = 1
+        self.light_thread.actual_b = 0
+        self.light_thread.projected_b = 0
         self.light_thread.projected_g = randint(50, 100)
         self.light_thread.projected_r = randint(50,100)

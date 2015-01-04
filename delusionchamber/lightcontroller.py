@@ -9,12 +9,12 @@ class LightThread(threading.Thread):
     def __init__(self, lc):
         super(LightThread, self).__init__()
         self.lc=lc
-        self.actual_r=1
-        self.projected_r= 1
-        self.actual_g = 1
-        self.projected_g = 1
-        self.actual_b = 1
-        self.projected_b = 1
+        self.actual_r=0
+        self.projected_r= 0
+        self.actual_g = 0
+        self.projected_g = 0
+        self.actual_b = 0
+        self.projected_b = 0
         self.f_rate = .9
         self.p_rate = .1
         self._stop = threading.Event()
@@ -23,8 +23,8 @@ class LightThread(threading.Thread):
         self.lc.red.ChangeDutyCycle(0)
         self.lc.blue.ChangeDutyCycle(0)
         self.lc.green.ChangeDutyCycle(0)
- 
         self._stop.set()
+
     def stopped(self):
         return self._stop.isSet()
 
@@ -35,27 +35,17 @@ class LightThread(threading.Thread):
             self.lc.blue.ChangeDutyCycle(self.actual_b)
             self.lc.green.ChangeDutyCycle(self.actual_g)
             sleep(self.p_rate)
+    def set_actual_val(self, actual, projected):
+        if actual < projected:
+            actual = 1 if actual == 0 else actual
+            return actual/self.f_rate if actual/self.f_rate < projected else projected
+        if actual >= projected:
+            return actual*self.f_rate if actual*self.f_rate > projected else projected
 
     def set_actual_values(self):
-            if self.actual_r < self.projected_r:
-                self.actual_r = self.actual_r+.1
-                self.actual_r = self.actual_r/self.f_rate if self.actual_r/self.f_rate < self.projected_r else self.projected_r
-            if self.actual_r > self.projected_r:
-                self.actual_r = self.actual_r*self.f_rate if self.actual_r*self.f_rate > self.projected_r else self.projected_r
-
-            if self.actual_g < self.projected_g:
-                self.actual_g = self.actual_g+.1
-                self.actual_g = self.actual_g/self.f_rate if self.actual_g/self.f_rate < self.projected_g else self.projected_g
-            if self.actual_g > self.projected_g:
-                self.actual_g = self.actual_g*self.f_rate if self.actual_g*self.f_rate > self.projected_g else self.projected_g
-
-            if self.actual_b < self.projected_b:
-                self.actual_b = self.actual_b+.1
-                self.actual_b = self.actual_b/self.f_rate if self.actual_b/self.f_rate < self.projected_b else self.projected_b
-            if self.actual_b > self.projected_b:
-                self.actual_b = self.actual_b*self.f_rate if self.actual_b*self.f_rate > self.projected_b else self.projected_b
-
-
+        self.actual_b = self.set_actual_val(self.actual_b, self.projected_b)
+        self.actual_r = self.set_actual_val(self.actual_r, self.projected_r)
+        self.actual_g = self.set_actual_val(self.actual_g, self.projected_g)
 
 class LightController():
     def __init__(self, GPIO, r, g, b):
