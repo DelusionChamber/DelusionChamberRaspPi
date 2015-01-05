@@ -49,6 +49,7 @@ class DelusionChamber:
                 if time.time() > next_time + 3:
                     next_time = time.time()
                     self.fade_calms()
+                time.sleep(2)
             self.selected_num = 0
             while self.photo < 500:
                 self.fade_warms()
@@ -66,11 +67,13 @@ class DelusionChamber:
 
     def pulse_green(self):
         self.light_thread.projected_b = 0
+        self.light_thread.actual_b = 0
         self.light_thread.projected_r = 0
+        self.light_thread.actual_r = 0
         self.light_thread.projected_g = 100 if self.light_thread.projected_g < 5 else 0
-        time.sleep(1)
+        time.sleep(2)
         self.light_thread.projected_g = 100 if self.light_thread.projected_g < 5 else 0
-        time.sleep(1)
+        time.sleep(2)
 
     def fade_calms(self):
         self.light_thread.actual_r = 0

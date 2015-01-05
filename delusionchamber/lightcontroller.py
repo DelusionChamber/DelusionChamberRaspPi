@@ -35,7 +35,9 @@ class LightThread(threading.Thread):
             self.lc.blue.ChangeDutyCycle(self.actual_b)
             self.lc.green.ChangeDutyCycle(self.actual_g)
             sleep(self.p_rate)
+
     def set_actual_val(self, actual, projected):
+        # math.arctan(x-300/4)*32+50
         if actual < projected:
             actual = 1 if actual == 0 else actual
             return actual/self.f_rate if actual/self.f_rate < projected else projected
