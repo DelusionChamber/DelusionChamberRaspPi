@@ -60,6 +60,19 @@ class DelusionChamber:
             print "stopped"
             self.light_thread.stop()
 
+    def is_motion_sensed():
+        closure_dict = {'motion_arr': [0 for x in range(100)], 
+                'current_pos': 0}
+        def add_to_arr():
+            if closure_dict['current_pos'] > len(closure_dict['motion_arr']):
+                closure_dict['current_pos'] = 0
+            closure_dict['motion_arr'][closure_dict['current_pos']] = GPIO.input(MOTION_PIN)
+            closure_dict['current_pos']+=1
+            return sum(closure_dict['motion_arr'])/len(closure_dict['motion_arr']) > 50
+        return add_to_arr()
+
+
+
     def pulse_red(self):
         self.light_thread.projected_g = 0
         self.light_thread.projected_b = 0

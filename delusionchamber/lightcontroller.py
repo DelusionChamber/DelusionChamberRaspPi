@@ -1,5 +1,4 @@
 from time import sleep
-
 from random  import randint
 import threading
 import pdb
@@ -100,11 +99,3 @@ class LightController():
         for i in range(100, -1, -1):
             self.green.ChangeDutyCycle(i)
             sleep(LIGHT_DELAY)
-
-
-
-
-
-
-
-
