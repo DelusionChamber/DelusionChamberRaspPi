@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import pdb, time
-from randomaudio import RandomAudio
+from randomaudio import RandomAudio, EasyAudio
 from lightcontroller import LightController, LightThread
 from winchcontroller import WinchController
 from pygame import mixer
@@ -23,6 +23,7 @@ class DelusionChamber:
         self.pm.init()
         self.random_ideas = RandomAudio('../idea_files', self.pm, 1, 0.2)
         self.random_music = RandomAudio('../music_files', self.pm, 2, 0.7)
+        self.notification = EasyAudio(self.pm, 3, 1)
         self.light = LightController(GPIO, RED_PIN, GREEN_PIN, BLUE_PIN)
         self.winch = WinchController(GPIO, WINCH_PULL_PIN, WINCH_PUSH_PIN)
         self.light_thread = LightThread(self.light)
@@ -54,8 +55,8 @@ class DelusionChamber:
             while self.photo < 500:
                 self.fade_warms()
                 self.winch.push()
-                self.random_music.play_sound()
-            self.random_ideas.play_sound()
+                self.random_music.play_random_sound()
+            self.random_ideas.play_random_sound()
         except (KeyboardInterrupt, SystemExit):
             print "stopped"
             self.light_thread.stop()
@@ -69,9 +70,7 @@ class DelusionChamber:
             closure_dict['motion_arr'][closure_dict['current_pos']] = GPIO.input(MOTION_PIN)
             closure_dict['current_pos']+=1
             return sum(closure_dict['motion_arr'])/len(closure_dict['motion_arr']) > 50
-        return add_to_arr()
-
-
+        return add_to_arr
 
     def pulse_red(self):
         self.light_thread.projected_g = 0

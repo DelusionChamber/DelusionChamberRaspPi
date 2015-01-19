@@ -15,6 +15,7 @@ class LightThread(threading.Thread):
         self.actual_b = 0
         self.projected_b = 0
         self.f_rate = .9
+        self.light_thread_take_control = True
         self.p_rate = .1
         self._stop = threading.Event()
 
@@ -28,7 +29,7 @@ class LightThread(threading.Thread):
         return self._stop.isSet()
 
     def run(self):
-        while True:
+        while self.light_thread_take_control:
             self.set_actual_values()
             self.lc.red.ChangeDutyCycle(self.actual_r)
             self.lc.blue.ChangeDutyCycle(self.actual_b)
@@ -37,11 +38,17 @@ class LightThread(threading.Thread):
 
     def set_actual_val(self, actual, projected):
         # math.arctan(x-300/4)*32+50
+        # if actual < projected:
+        #     actual = 1 if actual == 0 else actual
+        #     return actual/self.f_rate if actual/self.f_rate < projected else projected
+        # if actual >= projected:
+        #     return actual*self.f_rate if actual*self.f_rate > projected else projected
         if actual < projected:
             actual = 1 if actual == 0 else actual
-            return actual/self.f_rate if actual/self.f_rate < projected else projected
+            return actual+1 if actual+1 < projected else projected
         if actual >= projected:
-            return actual*self.f_rate if actual*self.f_rate > projected else projected
+            return actual-1 if actual-1 > projected else projected
+
 
     def set_actual_values(self):
         self.actual_b = self.set_actual_val(self.actual_b, self.projected_b)
@@ -70,27 +77,6 @@ class LightController():
         for i in range(100, -1, -1):
             self.red.ChangeDutyCycle(i)
             sleep(LIGHT_DELAY)
-    def fade_calms(self):
-        for i in range(0, 101):
-            self.blue.ChangeDutyCycle(i)
-            self.green.ChangeDutyCycle(100 - i)
-            sleep(LIGHT_DELAY/4)
-        for i in range(100, -1, -1):
-            self.blue.ChangeDutyCycle(i)
-            self.green.ChangeDutyCycle(100 - i)
-            sleep(LIGHT_DELAY/4)
-        for i in range(0, 101):
-            self.blue.ChangeDutyCycle(i)
-            self.red.ChangeDutyCycle(i)
-            sleep(LIGHT_DELAY/4)
-        for i in range(100, -1, -1):
-            self.blue.ChangeDutyCycle(100- i)
-            self.red.ChangeDutyCycle(100 - i)
-            sleep(LIGHT_DELAY/4)
-        for i in range(0, 101):
-            self.blue.ChangeDutyCycle(i)
-            self.green.ChangeDutyCycle(i)
-            sleep(LIGHT_DELAY/4)
 
     def fade_green(self):
         for i in range(0, 101):
