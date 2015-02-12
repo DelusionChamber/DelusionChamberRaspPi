@@ -10,7 +10,8 @@ RED_PIN = 17
 GREEN_PIN = 22
 BLUE_PIN = 27
 
-MOTION_PIN = 18
+TRAY_MOTION_PIN = 18
+INNER_MOTION_PIN = 23
 
 WINCH_PULL_PIN = 20
 WINCH_PUSH_PIN = 21
@@ -18,7 +19,8 @@ WINCH_PUSH_PIN = 21
 class DelusionChamber:
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(MOTION_PIN, GPIO.IN)
+        GPIO.setup(TRAY_MOTION_PIN, GPIO.IN)
+        GPIO.setup(INNER_MOTION_PIN, GPIO.IN)
         self.pm = mixer
         self.pm.init()
         self.random_ideas = RandomAudio('../idea_files', self.pm, 1, 0.2)
@@ -38,7 +40,7 @@ class DelusionChamber:
             self.fade_calms()
             time.sleep(3)
             while self.selected_num < 5 :
-                if GPIO.input(MOTION_PIN) == 1 or motion_sensed == True:
+                if GPIO.input(TRAY_MOTION_PIN) == 1 or motion_sensed == True:
                     print "Motion Sensed"
                     self.pulse_green()
                     if motion_sensed == False:
@@ -52,24 +54,26 @@ class DelusionChamber:
                     self.fade_calms()
                 time.sleep(2)
             self.selected_num = 0
-            while self.photo < 500:
-                self.fade_warms()
-                self.winch.push()
-                self.random_music.play_random_sound()
-            self.random_ideas.play_random_sound()
+            while True:
+                if GPIO.input(INNER_MOTION_PIN) == 0:
+                    self.fade_warms()
+                    self.winch.push()
+                if GPIO.input(INNER_MOTION_PIN) == 1:
+                    self.winch.stop()
+                    self.random_ideas.play_random_sound()
         except (KeyboardInterrupt, SystemExit):
             print "stopped"
             self.light_thread.stop()
 
-    def is_motion_sensed():
+    def is_motion_sensed(self):
         closure_dict = {'motion_arr': [0 for x in range(100)], 
                 'current_pos': 0}
         def add_to_arr():
-            if closure_dict['current_pos'] > len(closure_dict['motion_arr']):
+            if closure_dict['current_pos'] >= len(closure_dict['motion_arr']):
                 closure_dict['current_pos'] = 0
-            closure_dict['motion_arr'][closure_dict['current_pos']] = GPIO.input(MOTION_PIN)
+            closure_dict['motion_arr'][closure_dict['current_pos']] = GPIO.input(TRAY_MOTION_PIN)
             closure_dict['current_pos']+=1
-            return sum(closure_dict['motion_arr'])/len(closure_dict['motion_arr']) > 50
+            return sum(closure_dict['motion_arr'])/len(closure_dict['motion_arr'])
         return add_to_arr
 
     def pulse_red(self):

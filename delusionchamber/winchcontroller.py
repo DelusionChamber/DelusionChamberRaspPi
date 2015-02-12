@@ -5,12 +5,13 @@ class WinchController():
         self.PULL_PIN = PULL_PIN
         self.PUSH_PIN = PUSH_PIN
         self.GPIO = GPIO
-    def push(self):
+        self.stop()
+    def pull(self):
         self.GPIO.output(self.PULL_PIN, 0)
         self.GPIO.output(self.PUSH_PIN, 1)
-    def pull(self):
+    def push(self):
         self.GPIO.output(self.PUSH_PIN, 0)
         self.GPIO.output(self.PULL_PIN, 1)
     def stop(self):
-        self.GPIO.output(self.PULL_PIN, 0)
-        self.GPIO.output(self.PUSH_PIN, 0)
+        self.GPIO.output(self.PULL_PIN, 1)
+        self.GPIO.output(self.PUSH_PIN, 1)
